@@ -36,6 +36,10 @@ To start React JS development server:
 ```
 npm run start
 ```
+To execute Hardhat test: 
+```
+npx hardhat test
+```
 
 ## Execution with Docker
 

@@ -5,11 +5,13 @@ const web3 = new Web3(ganache.provider());
 
 const compiledFactory = require('../src/ethereum/build/EDeliveryFactory.json');
 const compiledDelivery = require('../src/ethereum/build/EDelivery.json');
+const { experimentalAddHardhatNetworkMessageTraceHook } = require('hardhat/config');
+const { ethers } = require('hardhat');
 
 let factoryContract;
 let deliveryContract;
 let deliveryContractAddress;
-let accounts; 
+let owner, address1, address2; 
 
 const MESSAGE = "Hola, com va tot?";
 
@@ -17,30 +19,31 @@ const MESSAGE = "Hola, com va tot?";
 require('events').EventEmitter.defaultMaxListeners = 0;
 
 beforeEach(async () => {
-  accounts = await web3.eth.getAccounts();
+  
+  //Contract deployment
+  [owner, address1, address2] = await ethers.getSigners();
 
-  factoryContract = await new web3.eth.Contract(compiledFactory.abi)
-    .deploy({ data: compiledFactory.evm.bytecode.object, arguments: [] })
-    .send({ from: accounts[0], gas: '6000000' });
+  const FactoryContract = await ethers.getContractFactory("EDeliveryFactory"); 
+  const DeliveryContract = await ethers.getContractFactory('EDelivery')
 
-  await factoryContract.methods
-    .createDelivery([accounts[1],accounts[2]], MESSAGE)
-    .send({ from: accounts[0], gas: '6000000', value: '100' });
+  factoryContract = await FactoryContract.deploy();
 
-  const addresses = await factoryContract.methods.getDeliveries().call();
-  deliveryContractAddress = addresses[0];
+  await factoryContract.connect(owner).createDelivery([address1.address, address2.address ], MESSAGE);
 
-  deliveryContract = await new web3.eth.Contract(compiledDelivery.abi, deliveryContractAddress);
+  const addresses = await factoryContract.connect(owner).getDeliveries();
+  
+  deliveryContract = DeliveryContract.attach(addresses[0]);
+
 });
 
 describe('Certified eDelivery Contract', () => {
   it('deploys a factory and a delivery', () => {
-    assert.ok(factoryContract.options.address);
-    assert.ok(deliveryContract.options.address);
+    assert.ok(factoryContract.address);
+    assert.ok(deliveryContract.address);
   });
 
   it("message is correct", async function() {
-    let message = await deliveryContract.methods.message().call();
+    let message = await deliveryContract.connect(address1).message();
     assert.equal(message, MESSAGE);
   });
 });
