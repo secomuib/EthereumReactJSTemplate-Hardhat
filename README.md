@@ -17,7 +17,7 @@ To compile the smart contract:
 npm run ethereum_compile
 ```
 
-To deploy to Rinkeby test network:
+To deploy to Sepolia test network:
 ```
 npm run ethereum_deploy
 ```

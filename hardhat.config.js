@@ -16,6 +16,7 @@ const chainIds = {
   mainnet: 1,
   rinkeby: 4,
   ropsten: 3,
+  sepolia: 11155111,
 };
 
 const MNEMONIC = process.env.MNEMONIC || '';
@@ -50,6 +51,13 @@ module.exports = {
         mnemonic: MNEMONIC,
       },
       chainId: chainIds.rinkeby,
+    },
+    sepolia: {
+      url: getInfuraURL('sepolia'),
+      accounts: {
+        mnemonic: MNEMONIC
+      },
+      chainId: chainIds.sepolia,
     },
     bsctest: {
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
